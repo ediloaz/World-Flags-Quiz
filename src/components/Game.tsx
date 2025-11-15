@@ -194,7 +194,7 @@ const Game: React.FC<GameProps> = ({ config, onFinish, onCancel }) => {
         </div>
 
         {/* Pregunta */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 mb-6">
+        <div className="bg-white rounded-2xl shadow-lg p-8 mb-6 transition-[height] duration-300 ease-in-out">
           <h3 className="text-2xl font-bold text-center mb-8 text-gray-800">
             ¿De qué país es esta bandera?
           </h3>
