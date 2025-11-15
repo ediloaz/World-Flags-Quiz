@@ -213,6 +213,7 @@ const Game: React.FC<GameProps> = ({ config, onFinish, onCancel }) => {
                 countryCode={currentQuestion.countryCode}
                 isDetailed={isDetailed}
                 size={240}
+                countryName={currentQuestion.countryName}
               />
             </div>
           </div>

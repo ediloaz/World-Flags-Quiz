@@ -10,6 +10,7 @@ interface FlagProps {
   countryCode: CountryCode;
   isDetailed: boolean;
   size?: number;
+  countryName?: string; // Nombre del país para alt text SEO
 }
 
 /**
@@ -22,7 +23,8 @@ interface FlagProps {
 const Flag: React.FC<FlagProps> = ({ 
   countryCode, 
   isDetailed, 
-  size = 64 
+  size = 64,
+  countryName
 }) => {
   const [mounted, setMounted] = useState(false);
 
@@ -44,6 +46,9 @@ const Flag: React.FC<FlagProps> = ({
   }
 
   const normalizedCode = countryCode.toUpperCase().trim();
+  const altText = countryName 
+    ? `Bandera de ${countryName}` 
+    : `Bandera del país con código ${normalizedCode}`;
 
   if (normalizedCode.length !== 2) {
     console.warn(`Flag: countryCode debe tener 2 caracteres. Recibido: ${normalizedCode}`);
@@ -89,7 +94,8 @@ const Flag: React.FC<FlagProps> = ({
               width: validSize,
               height: 'auto',
             }}
-            title={normalizedCode}
+            title={countryName || normalizedCode}
+            aria-label={altText}
           />
         </div>
       );
@@ -98,12 +104,16 @@ const Flag: React.FC<FlagProps> = ({
         <div 
           className="flex items-center justify-center rounded overflow-hidden shadow-sm border border-gray-200 bg-white transition-[height] duration-300 ease-in-out"
           style={{ width: validSize, height: 'auto' }}
+          role="img"
+          aria-label={altText}
         >
           <FlagComponent 
             style={{ 
               width: validSize, 
               height: 'auto',
-            }} 
+            }}
+            aria-label={altText}
+            title={countryName || normalizedCode}
           />
         </div>
       );

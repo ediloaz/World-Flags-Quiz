@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /game
+Disallow: /api/
+
+Sitemap: https://world-flags-quiz.ediloaz.com/sitemap.xml
+
