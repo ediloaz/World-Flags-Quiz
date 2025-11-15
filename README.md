@@ -1,61 +1,48 @@
-🌎✨ Bandera Rush — World Flags Quiz
-A fast & beautiful flag-guessing game built with Next.js, React and Tailwind CSS.
+# 🌎✨ Bandera Rush — World Flags Quiz
+A fast & beautiful flag-guessing game built with **Next.js**, **React** and **Tailwind CSS**.
 
----------------------------------------------------------------------
+---
 
-🌐 Choose your language / Elige tu idioma
+## 🌐 Choose your language / Elige tu idioma
 
-[🇪🇸 Español](#espanol) | [🇺🇸 English](#english)
+[🇪🇸 Español](#-español) | [🇺🇸 English](#-english)
 
----------------------------------------------------------------------
-BANNER IMAGE (optional)
+---
 
----------------------------------------------------------------------
+# 🇺🇸 English
 
-==========================
-🇺🇸 ENGLISH VERSION
-==========================
-
-🎮 A fast, modern and SEO-friendly world flags quiz  
+### 🎮 A fast, modern and SEO-friendly world flags quiz
 Guess flags, compete globally, climb the ranking.
 
----------------------------------------------------------------------
-🚀 Features
+## 🚀 Features
+- Built with Next.js + Tailwind CSS
+- Two game modes: Classic & Mixed
+- Timer + scoring formula
+- Global ranking (backend-ready)
+- Anti-bot system (CAPTCHA)
+- Responsive UI
+- SEO optimized
+- Game size: 10 or 25 flags
 
-• Built with Next.js + Tailwind CSS  
-• Two game modes:  
-  – Classic: well-known flags  
-  – Mixed: known + obscure (top difficulty)  
-• Timer per match + score formula  
-• Global ranking (backend-ready)  
-• Anti-bot system (CAPTCHA / modern challenges)  
-• Responsive & touch-friendly UI  
-• Highly interactive with React  
-• Full SEO optimization  
-• Game length selectable: 10 or 25 flags
-
----------------------------------------------------------------------
-🧩 Tech Stack
-
+## 🧩 Tech Stack
 Next.js · React · Tailwind CSS · TypeScript  
 country-flag-icons/react/3x2 · react-country-flag
 
----------------------------------------------------------------------
-📦 Installation
-
-git clone https://github.com/ediloaz/bandera-rush  
-cd bandera-rush  
-pnpm install  
+## 📦 Installation
+```
+git clone https://github.com/ediloaz/bandera-rush
+cd bandera-rush
+pnpm install
 pnpm dev
+```
 
----------------------------------------------------------------------
-🖥️ Run Development Server
-
+## 🖥️ Development
+```
 pnpm dev
+```
 
----------------------------------------------------------------------
-📁 Project Structure (simplified)
-
+## 📁 Structure
+```
 src/
  ├── components/
  │     └── Flag.tsx
@@ -64,59 +51,47 @@ src/
  │     ├── game/
  │     └── ranking/
  └── lib/
+```
 
----------------------------------------------------------------------
-📜 License  
+## 📜 License
 MIT License
 
----------------------------------------------------------------------
-Created with ❤️ by Edisson “ediloaz” López
+---
 
+# 🇪🇸 Español
 
-==========================
-🇪🇸 VERSIÓN EN ESPAÑOL
-==========================
+### 🎮 Un juego rápido y moderno para adivinar banderas
+Adivina banderas, compite y sube en el ranking global.
 
-🎮 Un juego rápido y moderno para adivinar banderas  
-Adivina banderas, compite globalmente y sube en el ranking.
+## 🚀 Características
+- Next.js + Tailwind CSS
+- Dos modos: Clásicas y Mezcladas
+- Temporizador + puntos
+- Ranking global
+- Anti-bots
+- UI responsiva
+- SEO optimizado
+- 10 o 25 banderas
 
----------------------------------------------------------------------
-🚀 Características
-
-• Construido con Next.js + Tailwind CSS  
-• Dos modos de juego:  
-  – Clásicas: banderas conocidas  
-  – Mezcladas: conocidas + poco conocidas (modo top)  
-• Temporizador por partida + fórmula de puntos  
-• Ranking global (listo para conectar backend)  
-• Sistema anti-bots (CAPTCHA / desafíos modernos)  
-• UI responsiva y apta para móvil  
-• Mucha interactividad en React  
-• SEO optimizado  
-• Tamaño configurable: 10 o 25 banderas
-
----------------------------------------------------------------------
-🧩 Tecnologías
-
+## 🧩 Tecnologías
 Next.js · React · Tailwind CSS · TypeScript  
 country-flag-icons/react/3x2 · react-country-flag
 
----------------------------------------------------------------------
-📦 Instalación
-
-git clone https://github.com/ediloaz/bandera-rush  
-cd bandera-rush  
-pnpm install  
+## 📦 Instalación
+```
+git clone https://github.com/ediloaz/bandera-rush
+cd bandera-rush
+pnpm install
 pnpm dev
+```
 
----------------------------------------------------------------------
-🖥️ Correr en desarrollo
-
+## 🖥️ Desarrollo
+```
 pnpm dev
+```
 
----------------------------------------------------------------------
-📁 Estructura del proyecto (simplificado)
-
+## 📁 Estructura
+```
 src/
  ├── components/
  │     └── Flag.tsx
@@ -125,10 +100,11 @@ src/
  │     ├── game/
  │     └── ranking/
  └── lib/
+```
 
----------------------------------------------------------------------
-📜 Licencia  
+## 📜 Licencia
 MIT License
 
----------------------------------------------------------------------
-Creado con ❤️ por Edisson “ediloaz” López
+---
+
+Made with ❤️ by **Edisson "ediloaz" López**
