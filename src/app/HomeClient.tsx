@@ -58,7 +58,7 @@ export default function HomeClient() {
           {/* Título */}
           <header className="text-center mb-8">
             <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
-              World Flags Quiz - Global Flag Guessing Game
+              World Flags Quiz
             </h1>
             <p className="text-gray-600 text-lg">
               Adivina banderas del mundo y compite en el ranking global
@@ -70,7 +70,7 @@ export default function HomeClient() {
             <h2 className="text-2xl font-semibold mb-3 text-gray-800">
               Juego Educativo de Geografía
             </h2>
-            <p className="text-base leading-relaxed">
+            <p className="text-xs leading-snug text-gray-400">
               World Flags Quiz es un juego educativo de geografía donde puedes poner a prueba tus conocimientos sobre las banderas del mundo. 
               Este Global Flag Quiz Game te desafía a identificar banderas de diferentes países mientras compites contra el tiempo. 
               Elige entre diferentes niveles de dificultad, desde banderas más conocidas hasta desafíos mixtos, y escala en el ranking global. 
