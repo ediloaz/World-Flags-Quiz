@@ -11,10 +11,6 @@ export default function RankingPage() {
   const [filter, setFilter] = useState<"all" | "famous" | "mixed">("all");
   const [sizeFilter, setSizeFilter] = useState<"all" | 10 | 25>("all");
 
-  useEffect(() => {
-    fetchRankings();
-  }, [filter, sizeFilter]);
-
   const fetchRankings = async () => {
     setLoading(true);
     try {
@@ -36,6 +32,11 @@ export default function RankingPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchRankings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter, sizeFilter]);
 
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
