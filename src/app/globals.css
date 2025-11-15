@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-slate-950 text-slate-100 min-h-screen antialiased;
+}
+
+a {
+  @apply text-accent;
+}
+
+.gradient-border {
+  position: relative;
+}
+
+.gradient-border::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border-radius: 1.5rem;
+  background: linear-gradient(120deg, #0ea5e9, #6366f1, #f43f5e);
+  filter: blur(8px);
+  opacity: 0.7;
+}
