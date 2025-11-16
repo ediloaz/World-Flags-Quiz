@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import Captcha from "@/components/Captcha";
 import type { GameConfig } from "@/lib/types";
 
+// Variable para activar/desactivar el Captcha temporalmente
+const CAPTCHA_ENABLED = false; // Cambiar a true para reactivar el Captcha
+
 export default function HomeClient() {
   const router = useRouter();
   const [difficulty, setDifficulty] = useState<"famous" | "mixed">("famous");
@@ -21,6 +24,14 @@ export default function HomeClient() {
 
     // Guardar nombre del jugador
     localStorage.setItem("playerName", playerName.trim());
+
+    // Si el Captcha está deshabilitado, iniciar juego directamente
+    if (!CAPTCHA_ENABLED) {
+      const config: GameConfig = { difficulty, size };
+      localStorage.setItem("gameConfig", JSON.stringify(config));
+      router.push("/game");
+      return;
+    }
 
     // Si no hay token, mostrar captcha
     const savedToken = localStorage.getItem("captcha_token");
