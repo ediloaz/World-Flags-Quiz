@@ -12,9 +12,6 @@ interface GameProps {
   onCancel?: () => void;
 }
 
-/**
- * Componente principal del juego
- */
 const Game: React.FC<GameProps> = ({ config, onFinish, onCancel }) => {
   const [gameState, setGameState] = useState<GameState>({
     currentQuestion: 0,
@@ -30,8 +27,22 @@ const Game: React.FC<GameProps> = ({ config, onFinish, onCancel }) => {
   const [isCorrect, setIsCorrect] = useState(false);
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [isDetailed, setIsDetailed] = useState(true);
+  const [flagSize, setFlagSize] = useState(220);
+  const [pointsEarned, setPointsEarned] = useState(0);
 
-  // Inicializar preguntas
+  // Responsive flag size
+  useEffect(() => {
+    const update = () => {
+      if (window.innerWidth >= 1024) setFlagSize(280);
+      else if (window.innerWidth >= 768) setFlagSize(250);
+      else setFlagSize(200);
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
+  // Initialize questions
   useEffect(() => {
     const countries = getCountriesByDifficulty(config.difficulty);
     const questions: FlagQuestion[] = [];
@@ -40,7 +51,6 @@ const Game: React.FC<GameProps> = ({ config, onFinish, onCancel }) => {
     for (let i = 0; i < config.size; i++) {
       const question = generateQuestion(countries, usedCountries);
       if (!question) break;
-
       usedCountries.add(question.countryCode);
       questions.push({
         countryCode: question.countryCode,
@@ -50,251 +60,322 @@ const Game: React.FC<GameProps> = ({ config, onFinish, onCancel }) => {
       });
     }
 
-    setGameState(prev => ({
-      ...prev,
-      questions,
-      startTime: Date.now(),
-    }));
+    setGameState((prev) => ({ ...prev, questions, startTime: Date.now() }));
   }, [config]);
 
-  const handleAnswer = useCallback((answer: string) => {
-    if (selectedAnswer !== null || showResult) return;
+  const handleAnswer = useCallback(
+    (answer: string) => {
+      if (selectedAnswer !== null || showResult) return;
 
-    const currentQ = gameState.questions[gameState.currentQuestion];
-    const correct = answer === currentQ.correctAnswer;
+      const currentQ = gameState.questions[gameState.currentQuestion];
+      const correct = answer === currentQ.correctAnswer;
 
-    setSelectedAnswer(answer);
-    setIsCorrect(correct);
-    setShowResult(true);
+      setSelectedAnswer(answer);
+      setIsCorrect(correct);
+      setShowResult(true);
 
-    // Calcular puntos: más rápido = más puntos
-    const basePoints = 100;
-    const timeBonus = Math.max(0, 30 - timeElapsed) * 2; // Bonus por velocidad
-    const difficultyMultiplier = config.difficulty === "mixed" ? 1.5 : 1;
-    const sizeMultiplier = config.size === 25 ? 1.5 : 1;
-    const points = Math.round((basePoints + timeBonus) * difficultyMultiplier * sizeMultiplier);
+      const basePoints = 100;
+      const timeBonus = Math.max(0, 30 - timeElapsed) * 2;
+      const difficultyMultiplier = config.difficulty === "mixed" ? 1.5 : 1;
+      const sizeMultiplier = config.size === 25 ? 1.5 : 1;
+      const points = Math.round(
+        (basePoints + timeBonus) * difficultyMultiplier * sizeMultiplier
+      );
 
-    const newScore = correct ? gameState.score + points : gameState.score;
-    const newAnswers = [...gameState.answers, correct];
+      setPointsEarned(correct ? points : 0);
+      const newScore = correct ? gameState.score + points : gameState.score;
+      const newAnswers = [...gameState.answers, correct];
 
-    setGameState(prev => ({
-      ...prev,
-      score: newScore,
-      answers: newAnswers,
-    }));
+      setGameState((prev) => ({ ...prev, score: newScore, answers: newAnswers }));
 
-    // Esperar 1.5 segundos antes de pasar a la siguiente pregunta
-    setTimeout(() => {
-      if (gameState.currentQuestion < gameState.questions.length - 1) {
-        setGameState(prev => ({
-          ...prev,
-          currentQuestion: prev.currentQuestion + 1,
-        }));
-        setSelectedAnswer(null);
-        setShowResult(false);
-        setTimeElapsed(0);
-      } else {
-        // Juego terminado
-        const endTime = Date.now();
-        const totalTime = Math.floor((endTime - gameState.startTime) / 1000);
+      setTimeout(() => {
+        if (gameState.currentQuestion < gameState.questions.length - 1) {
+          setGameState((prev) => ({
+            ...prev,
+            currentQuestion: prev.currentQuestion + 1,
+          }));
+          setSelectedAnswer(null);
+          setShowResult(false);
+          setTimeElapsed(0);
+          setPointsEarned(0);
+        } else {
+          const endTime = Date.now();
+          const totalTime = Math.floor((endTime - gameState.startTime) / 1000);
+          setGameState((prev) => ({ ...prev, isFinished: true, endTime }));
 
-        setGameState(prev => ({
-          ...prev,
-          isFinished: true,
-          endTime,
-        }));
+          const result: GameResult = {
+            score: newScore,
+            time: totalTime,
+            correctAnswers: newAnswers.filter((a) => a).length,
+            totalQuestions: config.size,
+            difficulty: config.difficulty,
+            size: config.size,
+          };
 
-        const result: GameResult = {
-          score: newScore,
-          time: totalTime,
-          correctAnswers: newAnswers.filter(a => a).length,
-          totalQuestions: config.size,
-          difficulty: config.difficulty,
-          size: config.size,
-        };
-
-        onFinish(result);
-      }
-    }, 1500);
-  }, [selectedAnswer, showResult, gameState, config, timeElapsed, onFinish]);
+          onFinish(result);
+        }
+      }, 1500);
+    },
+    [selectedAnswer, showResult, gameState, config, timeElapsed, onFinish]
+  );
 
   const currentQuestion = gameState.questions[gameState.currentQuestion];
+  const progress = ((gameState.currentQuestion + 1) / config.size) * 100;
 
   if (!currentQuestion) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-[#04091a]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Cargando preguntas...</p>
+          <div className="w-10 h-10 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-slate-500 text-sm">Cargando preguntas...</p>
         </div>
       </div>
     );
   }
 
-  if (gameState.isFinished) {
-    return null;
-  }
+  if (gameState.isFinished) return null;
+
+  const getAnswerClass = (option: string) => {
+    const isSelected = selectedAnswer === option;
+    const isCorrectOption = option === currentQuestion.correctAnswer;
+
+    const base =
+      "w-full p-4 text-left rounded-2xl border transition-all duration-200 flex items-center gap-3 font-medium ";
+
+    if (!showResult) {
+      return (
+        base +
+        "bg-white/[0.04] border-white/[0.08] text-slate-200 hover:bg-white/[0.08] hover:border-white/[0.18] hover:text-white cursor-pointer active:scale-[0.98]"
+      );
+    }
+    if (isCorrectOption) {
+      return (
+        base +
+        "bg-emerald-500/[0.12] border-emerald-500/40 text-emerald-300 shadow-lg shadow-emerald-500/10"
+      );
+    }
+    if (isSelected) {
+      return base + "bg-rose-500/[0.12] border-rose-500/40 text-rose-300";
+    }
+    return base + "bg-white/[0.02] border-white/[0.04] text-slate-700 cursor-default";
+  };
+
+  const flagRingClass = showResult
+    ? isCorrect
+      ? "ring-4 ring-emerald-400/50 shadow-[0_0_50px_rgba(16,185,129,0.25)]"
+      : "ring-4 ring-rose-400/50 shadow-[0_0_50px_rgba(244,63,94,0.25)]"
+    : "";
+
+  const feedbackEl = showResult ? (
+    <div
+      className={`flex items-center justify-center gap-2.5 py-3 px-5 rounded-2xl text-sm font-semibold animate-slide-up ${
+        isCorrect
+          ? "bg-emerald-500/[0.12] border border-emerald-500/30 text-emerald-300"
+          : "bg-rose-500/[0.12] border border-rose-500/30 text-rose-300"
+      }`}
+    >
+      {isCorrect ? (
+        <>
+          <span className="text-base">✓</span>
+          <span>
+            ¡Correcto! <strong>+{pointsEarned}</strong> pts
+          </span>
+        </>
+      ) : (
+        <>
+          <span className="text-base">✗</span>
+          <span>
+            Era: <strong>{currentQuestion.correctAnswer}</strong>
+          </span>
+        </>
+      )}
+    </div>
+  ) : null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Header del juego */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-          <div className="flex justify-between items-center flex-wrap gap-4">
-            <div>
-              <h2 className="text-xl font-semibold text-gray-800">
-                Pregunta {gameState.currentQuestion + 1} de {config.size}
-              </h2>
-              <p className="text-sm text-gray-500">
-                {config.difficulty === "famous" ? "Más Conocidas" : "Mezcladas"}
-              </p>
-            </div>
-            <div className="flex items-center gap-6 flex-wrap">
-              <div className="text-right">
-                <p className="text-sm text-gray-500">Puntos</p>
-                <p className="text-2xl font-bold text-blue-600">{gameState.score}</p>
+    <div className="min-h-screen bg-[#04091a] flex flex-col">
+      {/* Background */}
+      <div className="fixed inset-0 bg-grid pointer-events-none opacity-60" />
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-0 left-1/3 w-[450px] h-[450px] bg-blue-600/[0.07] rounded-full blur-[110px]" />
+        <div className="absolute bottom-0 right-1/3 w-[450px] h-[450px] bg-violet-600/[0.07] rounded-full blur-[110px]" />
+      </div>
+
+      {/* Sticky header */}
+      <header className="sticky top-0 z-40 bg-[#04091a]/85 backdrop-blur-xl border-b border-white/[0.06]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="flex items-center justify-between py-3 gap-3">
+            {/* Question counter */}
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div>
+                <div className="text-[10px] text-slate-600 uppercase tracking-wider">Pregunta</div>
+                <div className="font-syne font-black text-white text-lg leading-none">
+                  {gameState.currentQuestion + 1}
+                  <span className="text-slate-600 font-normal text-sm">
+                    /{config.size}
+                  </span>
+                </div>
               </div>
+              <div className="hidden sm:block w-px h-8 bg-white/[0.08]" />
+              <div className="hidden sm:flex items-center px-2.5 py-1 bg-white/[0.04] border border-white/[0.07] rounded-lg">
+                <span className="text-[11px] text-slate-500">
+                  {config.difficulty === "famous" ? "🌍 Conocidas" : "🌎 Mezcladas"}
+                </span>
+              </div>
+            </div>
+
+            {/* Score */}
+            <div className="flex-shrink-0 text-center">
+              <div className="text-[10px] text-slate-600 uppercase tracking-wider">Puntos</div>
+              <div className="font-syne font-black text-blue-400 text-xl tabular-nums leading-none">
+                {gameState.score.toLocaleString()}
+              </div>
+            </div>
+
+            {/* Timer + toggle + exit */}
+            <div className="flex items-center gap-2 sm:gap-3">
               <GameTimer
                 startTime={gameState.startTime}
                 onTimeUpdate={setTimeElapsed}
-                className="text-blue-600"
+                className="text-slate-300 text-sm sm:text-base"
               />
-              {/* Switch de estilo detallado */}
-              <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer hover:text-gray-800 transition-colors">
-                <span className="whitespace-nowrap">Bandera detallada</span>
-                <div className="relative inline-flex items-center">
+
+              {/* HD toggle — desktop */}
+              <label
+                className="hidden sm:flex items-center gap-1.5 cursor-pointer group"
+                title="Bandera detallada"
+              >
+                <span className="text-[11px] text-slate-600 group-hover:text-slate-400 transition-colors select-none">
+                  HD
+                </span>
+                <div className="relative w-8 h-[18px]">
                   <input
                     type="checkbox"
                     checked={isDetailed}
                     onChange={(e) => setIsDetailed(e.target.checked)}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                  <div className="w-8 h-[18px] bg-white/10 peer-checked:bg-blue-600 rounded-full transition-colors duration-200" />
+                  <div className="absolute top-[3px] left-[3px] w-3 h-3 bg-white rounded-full transition-transform duration-200 peer-checked:translate-x-[14px]" />
                 </div>
               </label>
+
+              {onCancel && (
+                <button
+                  onClick={onCancel}
+                  className="p-1.5 text-slate-600 hover:text-slate-300 hover:bg-white/[0.06] rounded-lg transition-all"
+                  title="Salir"
+                  aria-label="Salir del juego"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
             </div>
-            {onCancel && (
-              <button
-                onClick={onCancel}
-                className="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-              >
-                Salir
-              </button>
-            )}
           </div>
-          {/* Barra de progreso */}
-          <div className="mt-4 w-full bg-gray-200 rounded-full h-2">
+
+          {/* Progress bar */}
+          <div className="h-0.5 bg-white/[0.05] -mx-4 sm:-mx-6 overflow-hidden">
             <div
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-              style={{
-                width: `${((gameState.currentQuestion + 1) / config.size) * 100}%`,
-              }}
+              className="h-full bg-gradient-to-r from-blue-500 to-violet-500 transition-all duration-500 ease-out"
+              style={{ width: `${progress}%` }}
             />
           </div>
         </div>
+      </header>
 
-        {/* Pregunta */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 mb-6 transition-[height] duration-300 ease-in-out">
-          <h3 className="text-2xl font-bold text-center mb-8 text-gray-800">
-            ¿De qué país es esta bandera?
-          </h3>
-          
-          <div className="flex justify-center mb-8">
+      {/* Game content */}
+      <main className="relative z-10 flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+        <div className="lg:grid lg:grid-cols-2 lg:gap-14 lg:items-center lg:min-h-[calc(100vh-88px)]">
+          {/* Left panel: Question + Flag */}
+          <div className="flex flex-col items-center mb-8 lg:mb-0">
+            <h2 className="font-syne text-slate-300 text-lg sm:text-xl font-semibold mb-7 sm:mb-9 text-center">
+              ¿De qué país es esta bandera?
+            </h2>
+
             <div
-              className={`transition-all duration-300 ${
-                showResult
-                  ? isCorrect
-                    ? "scale-105 shadow-2xl ring-4 ring-green-400"
-                    : "scale-105 shadow-2xl ring-4 ring-red-400"
-                  : "hover:scale-105 hover:shadow-xl"
-              }`}
+              className={`rounded-2xl overflow-hidden transition-all duration-300 ${flagRingClass}`}
             >
               <Flag
                 countryCode={currentQuestion.countryCode}
                 isDetailed={isDetailed}
-                size={240}
+                size={flagSize}
                 countryName={currentQuestion.countryName}
               />
             </div>
+
+            {/* Feedback shown below flag on desktop */}
+            {showResult && (
+              <div className="hidden lg:block mt-8 w-full max-w-xs">{feedbackEl}</div>
+            )}
           </div>
 
-          {/* Opciones */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Right panel: Answers */}
+          <div className="flex flex-col gap-3">
             {currentQuestion.options.map((option, index) => {
               const isSelected = selectedAnswer === option;
               const isCorrectOption = option === currentQuestion.correctAnswer;
-
-              let buttonClass = "w-full p-4 text-left rounded-xl border-2 transition-all duration-200 font-medium text-lg ";
-              
-              if (showResult) {
-                if (isCorrectOption) {
-                  buttonClass += "bg-green-500 text-white border-green-600 shadow-lg";
-                } else if (isSelected && !isCorrectOption) {
-                  buttonClass += "bg-red-500 text-white border-red-600 shadow-lg";
-                } else {
-                  buttonClass += "bg-gray-100 text-gray-500 border-gray-200";
-                }
-              } else {
-                buttonClass += "bg-blue-50 hover:bg-blue-100 text-gray-800 border-blue-200 hover:border-blue-400 hover:shadow-md cursor-pointer";
-              }
 
               return (
                 <button
                   key={index}
                   onClick={() => handleAnswer(option)}
                   disabled={showResult}
-                  className={buttonClass}
+                  className={getAnswerClass(option)}
                 >
-                  <span className="inline-flex items-center gap-3">
-                    <span className="w-8 h-8 rounded-full bg-white bg-opacity-50 flex items-center justify-center font-bold">
-                      {String.fromCharCode(65 + index)}
-                    </span>
-                    {option}
+                  <span
+                    className={`flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold transition-all ${
+                      showResult && isCorrectOption
+                        ? "bg-emerald-500/25 text-emerald-300"
+                        : showResult && isSelected
+                        ? "bg-rose-500/25 text-rose-300"
+                        : "bg-white/[0.08] text-slate-500"
+                    }`}
+                  >
+                    {String.fromCharCode(65 + index)}
                   </span>
+                  <span className="flex-1 text-sm sm:text-base">{option}</span>
+                  {showResult && isCorrectOption && (
+                    <span className="ml-auto text-emerald-400 flex-shrink-0">✓</span>
+                  )}
+                  {showResult && isSelected && !isCorrectOption && (
+                    <span className="ml-auto text-rose-400 flex-shrink-0">✗</span>
+                  )}
                 </button>
               );
             })}
-          </div>
 
-          {/* Feedback */}
-          {showResult && (
-            <div
-              className={`mt-6 p-4 rounded-xl text-center font-semibold animate-slide-up ${
-                isCorrect
-                  ? "bg-green-100 text-green-800"
-                  : "bg-red-100 text-red-800"
-              }`}
-            >
-              {isCorrect ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  ¡Correcto! +{Math.round((100 + Math.max(0, 30 - timeElapsed) * 2) * (config.difficulty === "mixed" ? 1.5 : 1) * (config.size === 25 ? 1.5 : 1))} puntos
-                </span>
-              ) : (
-                <span className="flex items-center justify-center gap-2">
-                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  Incorrecto. La respuesta correcta es: {currentQuestion.correctAnswer}
-                </span>
-              )}
+            {/* Feedback on mobile/tablet */}
+            {showResult && <div className="lg:hidden mt-1">{feedbackEl}</div>}
+
+            {/* HD toggle — mobile only */}
+            <div className="sm:hidden flex items-center justify-center gap-2 mt-3">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <span className="text-xs text-slate-600 select-none">Bandera detallada</span>
+                <div className="relative w-8 h-[18px]">
+                  <input
+                    type="checkbox"
+                    checked={isDetailed}
+                    onChange={(e) => setIsDetailed(e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-8 h-[18px] bg-white/10 peer-checked:bg-blue-600 rounded-full transition-colors duration-200" />
+                  <div className="absolute top-[3px] left-[3px] w-3 h-3 bg-white rounded-full transition-transform duration-200 peer-checked:translate-x-[14px]" />
+                </div>
+              </label>
             </div>
-          )}
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 };
 
 export default Game;
-

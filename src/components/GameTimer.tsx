@@ -8,23 +8,19 @@ interface GameTimerProps {
   className?: string;
 }
 
-/**
- * Componente para mostrar el tiempo transcurrido en el juego
- */
-const GameTimer: React.FC<GameTimerProps> = ({ 
-  startTime, 
+const GameTimer: React.FC<GameTimerProps> = ({
+  startTime,
   onTimeUpdate,
-  className = "" 
+  className = "",
 }) => {
   const [elapsed, setElapsed] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const now = Date.now();
-      const elapsedSeconds = Math.floor((now - startTime) / 1000);
+      const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
       setElapsed(elapsedSeconds);
       onTimeUpdate?.(elapsedSeconds);
-    }, 100); // Actualizar cada 100ms para suavidad
+    }, 100);
 
     return () => clearInterval(interval);
   }, [startTime, onTimeUpdate]);
@@ -36,26 +32,23 @@ const GameTimer: React.FC<GameTimerProps> = ({
   };
 
   return (
-    <div className={`text-2xl font-bold ${className}`}>
-      <span className="inline-flex items-center gap-2">
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
-        {formatTime(elapsed)}
-      </span>
+    <div className={`flex items-center gap-1.5 font-bold tabular-nums ${className}`}>
+      <svg
+        className="w-4 h-4 opacity-60 flex-shrink-0"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+      </svg>
+      <span>{formatTime(elapsed)}</span>
     </div>
   );
 };
 
 export default GameTimer;
-

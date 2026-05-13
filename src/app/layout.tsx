@@ -1,6 +1,19 @@
 import type { Metadata } from "next";
+import { Syne, DM_Sans } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
+
+const syne = Syne({
+  subsets: ["latin"],
+  variable: "--font-syne",
+  display: "swap",
+});
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-dm-sans",
+  display: "swap",
+});
 
 const siteUrl = "https://world-flags-quiz.ediloaz.com";
 
@@ -74,8 +87,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const siteUrl = "https://world-flags-quiz.ediloaz.com";
-  
   const websiteJsonLd = {
     "@context": "https://schema.org",
     "@type": "WebSite",
@@ -125,8 +136,8 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="es">
-      <body className="antialiased">
+    <html lang="es" className={`${syne.variable} ${dmSans.variable}`}>
+      <body className="antialiased font-sans">
         <Script
           id="website-jsonld"
           type="application/ld+json"
@@ -142,4 +153,3 @@ export default function RootLayout({
     </html>
   );
 }
-
